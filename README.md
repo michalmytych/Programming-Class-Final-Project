@@ -2,7 +2,7 @@
 
 ## Programming-Class-Final-Project
 It's a classic 2D Space Invaders - style game I created with C++ and Allegro5 for my Introduction to Programming classes final project. 
-I decided to use one C++ file, because game isn't really much complicated.
+I decided to use one C++ file, because game isn't really complicated.
 
 ### COMPILATION
 The best way to run this project is to set up new console application project in Visual Studio 2019, include GraAllegroPierwszyRelease.cpp
