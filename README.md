@@ -1,7 +1,4 @@
-# WORK IN PROGRESS! Code isn't ready.
-
-## PLANS
-In the future I will extract some functions etc to another .cpp files, and refactor code.
+# Programming Class Final Project - Classic Space Invaders
 
 ### Programming-Class-Final-Project
 It's a classic 2D Space Invaders - style game I created with C++ and Allegro5 for my Introduction to Programming classes final project. 
