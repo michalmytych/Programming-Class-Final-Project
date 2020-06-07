@@ -1,6 +1,5 @@
 ﻿#include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
-//#include <allegro5/native.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
@@ -11,11 +10,6 @@
 
 
 
-
-void setTiles(int player_location_x, int player_location_y);
-void drawTiles(int tile_x_index, int tile_y_index, int player_x, int player_y);
-
-// makra
 #define SCALED_WIDTH 640
 #define SCALED_HEIGHT 360
 #define FPS 65
@@ -24,10 +18,8 @@ void drawTiles(int tile_x_index, int tile_y_index, int player_x, int player_y);
 #define LEVEL_1_START 150
 #define MAP_SIZE_X 10
 #define MAP_SIZE_Y 10
-//#define BLOCK_SIZE 10
 
 
-// klasa wszystkich bioracych udzial w rozgrywce obiektow:
 class MovableObject {
 public:
 	int x;							// polozenie w osi x
@@ -52,43 +44,6 @@ public:
 
 
 
-
-
-// ruszajaca sie mapa
-int map_width;
-int map_height;
-int player_location_x;
-int player_location_y;
-int tile_indexes[2];
-
-
-
-// mapa wczytywana na biezaco
-int loadCounterX = 0, loadCounterY = 0, mapSizeX = 0, mapSizeY = 0;
-
-
-
-void loadMap(const char* filename, int** map) {
-	std::ifstream openfile(filename);
-	if (openfile.is_open()) {
-		openfile >> mapSizeX >> mapSizeY;
-		while (!openfile.eof()) {
-			openfile >> map[loadCounterX][loadCounterY];
-			loadCounterX++;
-
-			if (loadCounterX >= mapSizeX) {
-				loadCounterX = 0;
-				loadCounterY++;
-			}
-		}
-	}
-	else {
-		printf("Nie udalo sie wczytac mapy!\n");
-	}
-}
-
-
-// funkcja rysujaca pieciopikselowa gwiazde
 void drawStar(int x, int y) {
 	al_draw_pixel(x, y, al_map_rgb(255, 255, 255));
 	al_draw_pixel(x + 1, y, al_map_rgb(255, 255, 255));
@@ -98,13 +53,11 @@ void drawStar(int x, int y) {
 }
 
 
-// to samo dla mniejszej
 void drawSmallStar(int x, int y) {
 	al_draw_pixel(x, y, al_map_rgb(255, 255, 255));
 }
 
 
-// obliczanie dystansu miedzy pociskami i wrogiem / graczem
 float distanceCalculate(float x1, float y1, float x2, float y2)
 {
 	return sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
@@ -114,7 +67,6 @@ float distanceCalculate(float x1, float y1, float x2, float y2)
 
 int main()
 {
-	// zmienne
 	bool running = true;
 	bool menu = true;
 	int i = 0;
@@ -127,20 +79,16 @@ int main()
 	char scoreBuf[256];
 	char lifesBuf[256];
 	char highestScoreBuf[256];
-	// zmienne lokalne
 	int map[100][100];
 
 
-	// inicjalizacja skalowania
 	ALLEGRO_TRANSFORM transformation;
 
 
-	// Otwieranie pliku z najwyzszym wynikiem:
 	FILE* highest_score_file;
 	fopen_s(&highest_score_file, "hs.txt", "r+");
 
 
-	// w przypadku bledu dostepu uzywam innej metody i tworze nowy plik
 	if (highest_score_file == NULL) {
 		printf_s("Nie znaleziono pliku hs.txt\n");
 		highestScoreBuf[0] = '0';
@@ -157,7 +105,6 @@ int main()
 
 
 
-	// inicjalizacje modulow ze sprawdzeniem:
 	if (!al_init()) {
 		fprintf(stderr, "Nie udalo sie zainicjalizowac Allegro5!");
 		return -1;
@@ -235,7 +182,6 @@ int main()
 	Spark.hitTime = 0;
 
 
-	// obiekty udostepniane przez biblioteke allegro
 	al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
 	ALLEGRO_DISPLAY* display = al_create_display(SCALED_WIDTH, SCALED_HEIGHT);
 	ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
@@ -251,30 +197,25 @@ int main()
 	al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
 
 
-	// stale oznaczajace faktor skalowania display-u do pelnego ekranu
 	const float scale_factor_x = ((float)al_get_display_width(display)) / SCALED_WIDTH;
 	const float scale_factor_y = ((float)al_get_display_height(display)) / SCALED_HEIGHT;
 
 
-	// transformacja skalowania display-u
 	al_identity_transform(&transformation);
 	al_scale_transform(&transformation, scale_factor_x, scale_factor_y);
 	al_use_transform(&transformation);
 
 
-	// instalacje kontrolerow
 	al_install_keyboard();
 	al_install_mouse();
 
 
-	// rejestrowanie zrodel event-ow
 	al_register_event_source(queue, al_get_keyboard_event_source());
 	al_register_event_source(queue, al_get_mouse_event_source());
 	al_register_event_source(queue, al_get_display_event_source(display));
 	al_register_event_source(queue, al_get_timer_event_source(timer));
 
 
-	// obiekty sprite-ow
 	logo = al_load_bitmap("assets/logo_min.png");
 	shot_sprite = al_load_bitmap("assets/redshot.png");
 	player_sprite = al_load_bitmap("assets/xwing.png");
@@ -291,7 +232,6 @@ int main()
 	assert(expl_sprite != NULL);
 	assert(font != NULL);
 	assert(score_font != NULL);
-	// pobieram tu szerokosci bitmap, bo przydadza sie wielokrotnie
 	int player_sprite_width = al_get_bitmap_width(player_sprite);
 	int enemy_sprite_width = al_get_bitmap_width(enemy_sprite);
 
@@ -299,7 +239,6 @@ int main()
 	al_start_timer(timer);
 
 
-	// *** PĘTLA WIDOKU STARTOWEGO ***
 	while (menu) {
 
 		ALLEGRO_EVENT event;
@@ -308,7 +247,6 @@ int main()
 		al_get_keyboard_state(&keyState);
 
 
-		// losowanie pozycji nowo pojawiajacych sie gwiazd
 		if (al_get_timer_count(timer) < 5) {
 			for (i = 0; i < 50; i++) {
 				starsPositions[i][0] = rand() % SCALED_WIDTH;
