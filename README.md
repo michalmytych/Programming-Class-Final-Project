@@ -19,3 +19,8 @@ Also, you need to include some add-ons in project properties in Allegro5 tab:
 
 You can compile it in Release mode for x86 Windows. 
 Assets folder must be in Release folder of the solution, or errors will occur.
+
+
+Preview:
+![cccc](https://user-images.githubusercontent.com/59512535/83978236-5473e200-a906-11ea-88a0-8b76a74981bf.png)
+
