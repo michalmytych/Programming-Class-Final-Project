@@ -15,7 +15,7 @@ Also, you need to include some add-ons in project properties in Allegro5 tab:
 * Primitives Add-on
 
 You can compile it in Release mode for x86 Windows. 
-Assets folder must be in Release folder of the solution, or errors will occur.
+Assets folder must be in Release folder of the solution as well as all resource files must stay in / or be added to solution dir, or errors will occur.
 
 
 Preview:
