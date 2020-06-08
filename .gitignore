@@ -351,3 +351,4 @@ MigrationBackup/
 
 git_key
 git_key.pub
+.dist/

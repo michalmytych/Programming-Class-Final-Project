@@ -1,4 +1,4 @@
-﻿#include <allegro5/allegro.h>
+#include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_font.h>
@@ -16,31 +16,47 @@
 #define HUD_FONT_SIZE 25
 #define SCORE_FONT_SIZE 40
 #define LEVEL_1_START 150
-#define MAP_SIZE_X 10
-#define MAP_SIZE_Y 10
+
 
 
 class MovableObject {
 public:
-	int x;							// polozenie w osi x
-	int y;							// polozenie w osi y
-	float vel;						// predkosc w osi x
-	float accel;					// przyspieszenie w osi x
-	float throttle;					// "gaz" w osi y
-	float maxVel;					// maksymalna predkosc w osi x
-	int objSlowDown;				// faktor wytracania predkosci w osi x
-	int moveState;					// kierunek w jakim porusza sie aktualnie obiekt 1 - lewo, 2 - prawo, 3 - zatrzymany
-	int prevMoveState;				// kierunek/state w jakim poruszal sie obiekt przed zmiana kierunku 
-	bool alive;						// jesli prawdziwy, obiekt jest obecny w rozgrywce
-	float respawnDuration;			// czas do ponownego pojawienia sie obiektu
-	float hitTime;					// timer count w ktorym obiekt skolidowal sie z innym
-	int levelHardness;				// wspolczynnik trudnosci (skracany czas spawnowania sie wrogow)
-	int lifes;						// ilosc punktow zywotnosci
-	bool throwed;					// status pocisku, jesli true => wystrzelony
-	int score;						// ilosc pokonanych przeciwnikow
-	int turn;						// zwrot przeciwnika
-	int hitDistance;				// dystans ponizej jakiego spotkanie z pociskiem konczy sie trafieniem
+	int x;							
+	int y;							
+	float vel;						
+	float accel;					
+	float throttle;					
+	float maxVel;					
+	int objSlowDown;				
+	int moveState;					
+	int prevMoveState;				 
+	bool alive;						
+	float respawnDuration;			
+	float hitTime;					
+	int levelHardness;				
+	int lifes;						
+	bool throwed;					
+	int score;						
+	int turn;						
+	int hitDistance;				
 };
+
+
+
+int starsPositions[50][2];
+int smallStarsPos[100][2];
+int sparksPositions[100][4];
+int i = 0;
+int r = 0;
+float tmp = 0;
+char scoreBuf[256];
+char lifesBuf[256];
+char highestScoreBuf[256];
+bool text_visible = true;
+bool running = true;
+bool menu = true;
+bool end_view = true;
+bool game_ended = false;
 
 
 
@@ -67,21 +83,6 @@ float distanceCalculate(float x1, float y1, float x2, float y2)
 
 int main()
 {
-	bool running = true;
-	bool menu = true;
-	int i = 0;
-	int r = 0;
-	float tmp = 0;
-	int starsPositions[50][2];
-	int smallStarsPos[100][2];
-	int sparksPositions[100][4];
-	bool text_visible = true;
-	char scoreBuf[256];
-	char lifesBuf[256];
-	char highestScoreBuf[256];
-	int map[100][100];
-
-
 	ALLEGRO_TRANSFORM transformation;
 
 
@@ -182,6 +183,7 @@ int main()
 	Spark.hitTime = 0;
 
 
+
 	al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
 	ALLEGRO_DISPLAY* display = al_create_display(SCALED_WIDTH, SCALED_HEIGHT);
 	ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
@@ -192,13 +194,17 @@ int main()
 	ALLEGRO_BITMAP* enemy_sprite = NULL;
 	ALLEGRO_BITMAP* enemy_shot_sprite = NULL;
 	ALLEGRO_BITMAP* expl_sprite = NULL;
+	ALLEGRO_BITMAP* heart_icon = NULL;
+	ALLEGRO_BITMAP* alien_icon = NULL;
 	ALLEGRO_FONT* font = NULL;
 	ALLEGRO_FONT* score_font = NULL;
 	al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
 
 
+
 	const float scale_factor_x = ((float)al_get_display_width(display)) / SCALED_WIDTH;
 	const float scale_factor_y = ((float)al_get_display_height(display)) / SCALED_HEIGHT;
+
 
 
 	al_identity_transform(&transformation);
@@ -206,8 +212,10 @@ int main()
 	al_use_transform(&transformation);
 
 
+
 	al_install_keyboard();
 	al_install_mouse();
+
 
 
 	al_register_event_source(queue, al_get_keyboard_event_source());
@@ -216,12 +224,15 @@ int main()
 	al_register_event_source(queue, al_get_timer_event_source(timer));
 
 
+
 	logo = al_load_bitmap("assets/logo_min.png");
 	shot_sprite = al_load_bitmap("assets/redshot.png");
 	player_sprite = al_load_bitmap("assets/xwing.png");
 	enemy_sprite = al_load_bitmap("assets/tiefighter.png");
 	enemy_shot_sprite = al_load_bitmap("assets/greenshot.png");
 	expl_sprite = al_load_bitmap("assets/explode.png");
+	heart_icon = al_load_bitmap("assets/heart.png");
+	alien_icon = al_load_bitmap("assets/alien.png");
 	font = al_load_ttf_font("assets/arcadeClassic.TTF", HUD_FONT_SIZE, 0);
 	score_font = al_load_ttf_font("assets/arcadeClassic.TTF", SCORE_FONT_SIZE, 0);
 	assert(logo != NULL);
@@ -230,15 +241,22 @@ int main()
 	assert(enemy_sprite != NULL);
 	assert(enemy_shot_sprite != NULL);
 	assert(expl_sprite != NULL);
+	assert(heart_icon != NULL);
+	assert(alien_icon != NULL);
 	assert(font != NULL);
 	assert(score_font != NULL);
+
+
 	int player_sprite_width = al_get_bitmap_width(player_sprite);
 	int enemy_sprite_width = al_get_bitmap_width(enemy_sprite);
+
 
 
 	al_start_timer(timer);
 
 
+
+	// *** START VIEW LOOP ***
 	while (menu) {
 
 		ALLEGRO_EVENT event;
@@ -260,23 +278,20 @@ int main()
 
 
 
-		// *** WIDOK STARTOWY ***
+		// *** START VIEW ***
 
-		// Przy kazdym tick-u timera renderuje odpowiednie elementy
 		if (event.type == ALLEGRO_EVENT_TIMER) {
 			al_clear_to_color(al_map_rgba_f(0, 0, 0, 1));
 
 
-			// renderowanie 50 pieciopikselowych przesuwajacych sie nieustannie gwiazd
 			for (i = 0; i < 49; i++) {
-				if (starsPositions[i][1] + al_get_timer_count(timer) > SCALED_HEIGHT) {	// jesli wyjdzie poza dolna krawedz, ustalana nowa pozycja
+				if (starsPositions[i][1] + al_get_timer_count(timer) > SCALED_HEIGHT) {	
 					starsPositions[i][0] = rand() % SCALED_WIDTH;
 					starsPositions[i][1] = 0 - al_get_timer_count(timer) * 1.05;
 				}
 				drawStar(starsPositions[i][0], starsPositions[i][1] + al_get_timer_count(timer) * 1.05);
 			}
 
-			// renderowanie 100 jednopikselowych gwiazd w taki sam sposob jak wieksze
 			for (i = 0; i < 99; i++) {
 				if (smallStarsPos[i][1] + al_get_timer_count(timer) > SCALED_HEIGHT) {
 					smallStarsPos[i][0] = rand() % SCALED_WIDTH;
@@ -289,10 +304,8 @@ int main()
 			al_hide_mouse_cursor(display);
 
 
-			// *** KONTROLER WIDOKU STARTOWEGO ***
+			// *** START MENU CONTROLLER ***
 
-
-			// wyjscie z programu
 			if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE || al_key_down(&keyState, ALLEGRO_KEY_ESCAPE))
 			{
 				menu = false;
@@ -300,7 +313,6 @@ int main()
 			}
 
 
-			// przejscie do rozgrywki
 			if (al_key_down(&keyState, ALLEGRO_KEY_ENTER))
 			{
 				menu = false;
@@ -312,10 +324,13 @@ int main()
 
 		}
 
-		// *** WIDOK ***
+
+		// *** START VIEW ***
+
 		al_draw_bitmap(logo, (SCALED_WIDTH / 2) - al_get_bitmap_width(logo) / 2, ((SCALED_HEIGHT / 2) - al_get_bitmap_height(logo) / 2 )- 70, 0);
 		al_draw_text(font, al_map_rgb(255, 255, 255), (SCALED_WIDTH / 2) - 90, (SCALED_HEIGHT / 2) - 20, 0, "HIGHEST   SCORE");
 		al_draw_text(score_font, al_map_rgb(255, 255, 255), (SCALED_WIDTH / 2) - 13, (SCALED_HEIGHT / 2) + 10, 0, highestScoreBuf);
+
 
 		if (text_visible) {
 			al_draw_text(font, al_map_rgb(147, 61, 185), (SCALED_WIDTH / 2) - 130, (SCALED_HEIGHT / 2) + 70, 0, "PRESS   ENTER   TO   PLAY !");
@@ -327,30 +342,28 @@ int main()
 
 
 
-	// zerowanie timera
 	al_set_timer_count(timer, 0);
 
 
-
-	// *** PETLA GRY ***
+	// *** GAME LOOP ***
 
 	while (running)
 	{
-		// nasluchiwanie na eventy
+
 		ALLEGRO_EVENT event;
 		al_wait_for_event(queue, &event);
 		ALLEGRO_KEYBOARD_STATE keyState;
 		al_get_keyboard_state(&keyState);
 
-		// ukrywanie kursora
+
 		al_hide_mouse_cursor(display);
 
 
-		// zmienne ktore co okrazenie petli przyjmuja taka sama wartosc
 		Explosion.throwed = false;
 
 
-		// *** KONTROLER ***
+
+		// *** GAME CONTROLLER ***
 
 		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE || al_key_down(&keyState, ALLEGRO_KEY_ESCAPE))
 		{
@@ -358,7 +371,7 @@ int main()
 		}
 
 
-		// ruch gracza lewo - prawo
+
 		if (al_key_down(&keyState, ALLEGRO_KEY_A) || al_key_down(&keyState, ALLEGRO_KEY_LEFT))
 		{
 			if (Player.prevMoveState == 2)
@@ -393,7 +406,7 @@ int main()
 		}
 
 
-		// strzelanie
+
 		if (al_key_down(&keyState, ALLEGRO_KEY_SPACE))
 		{
 			if (Shot.y < 0) {
@@ -403,7 +416,7 @@ int main()
 		}
 
 
-		// strzal wroga
+
 		if (Enemy.alive && al_get_timer_count(timer) > LEVEL_1_START)
 		{
 			if (!EnemyShot.throwed) {
@@ -416,7 +429,8 @@ int main()
 		}
 
 
-		// *** WIDOK ***
+
+		// *** GAME VIEW ***
 		if (Player.moveState == 1)
 		{
 			Player.prevMoveState = 1;
@@ -451,13 +465,13 @@ int main()
 		}
 
 
-		// ruch wroga w osi Y:
+
 		if (Enemy.alive && al_get_timer_count(timer) > LEVEL_1_START) {
 			Enemy.y = Enemy.y + Enemy.throttle;
 		}
 
 
-		// ograniczenie Player.x w tym przedziale spowoduje, że nie bedzie on wychodzil poza obreb okna
+
 		if (Player.x <= 0)
 		{
 			Player.x = 0;
@@ -468,7 +482,7 @@ int main()
 		}
 
 
-		// losowanie pozycji nowo pojawiajacych sie gwiazd
+
 		if (al_get_timer_count(timer) < 5) {
 			for (i = 0; i < 50; i++) {
 				starsPositions[i][0] = rand() % SCALED_WIDTH;
@@ -481,15 +495,13 @@ int main()
 		}
 
 
-		// Przy kazdym tick-u timera renderuje odpowiednie elementy
+
 		if (event.type == ALLEGRO_EVENT_TIMER)
 		{
-			// wypelnianie tla czarnym kolorem:
 			al_clear_to_color(al_map_rgba_f(0, 0, 0, 1));
 
 
 
-			// renderowanie 50 pieciopikselowych przesuwajacych sie nieustannie gwiazd
 			for (i = 0; i < 49; i++) {
 				if (starsPositions[i][1] + al_get_timer_count(timer) > SCALED_HEIGHT) {	// jesli wyjdzie poza dolna krawedz, ustalana nowa pozycja
 					starsPositions[i][0] = rand() % SCALED_WIDTH;
@@ -499,7 +511,7 @@ int main()
 			}
 
 
-			// renderowanie 100 jednopikselowych gwiazd w taki sam sposob jak wieksze
+
 			for (i = 0; i < 99; i++) {
 				if (smallStarsPos[i][1] + al_get_timer_count(timer) > SCALED_HEIGHT) {
 					smallStarsPos[i][0] = rand() % SCALED_WIDTH;
@@ -510,7 +522,7 @@ int main()
 			al_draw_bitmap(player_sprite, Player.x, Player.y, 0);
 
 
-			// sprawdzanie trafienia wroga
+
 			if (Enemy.alive && al_get_timer_count(timer) > LEVEL_1_START) {
 				if (distanceCalculate(Shot.x + 40, Shot.y, Enemy.x + 60, Enemy.y + 60) < Enemy.hitDistance) {
 					Explosion.x = Enemy.x;
@@ -525,10 +537,10 @@ int main()
 					Enemy.turn = (rand() % 2) - 1;
 					Enemy.hitTime = al_get_timer_count(timer);
 					Enemy.respawnDuration = rand() % Player.levelHardness;
-					// rozpoczynanie renderowania eksplozji
+
 					Explosion.hitTime = al_get_timer_count(timer);
 					Explosion.throwed = true;
-					// zmniejszanie czasu respawnu przeciwnika za kazdym razem kiedy zostaje trafiony:
+
 					if (Player.levelHardness > 50) {
 						Player.levelHardness = Player.levelHardness - 2;
 					}
@@ -536,7 +548,7 @@ int main()
 			}
 
 
-			// ograniczanie wroga w obrebie playgroundu
+
 			if (Enemy.x <= enemy_sprite_width) {
 				Enemy.turn = 0;
 			}
@@ -545,10 +557,9 @@ int main()
 			}
 
 
-			// nadawanie pozycji startowych odlamkom z eksplozji wroga
 			if (Explosion.throwed) {
 				for (int r = 0; r < 25; r++) {
-					// poczatkowe polozenie iskry to srodek sprite-a eksplozji
+
 					sparksPositions[r][0] = Explosion.x + 41;
 					sparksPositions[r][1] = Explosion.y + 36;
 					sparksPositions[r + 25][0] = Explosion.x + 40;
@@ -557,8 +568,7 @@ int main()
 					sparksPositions[r + 50][1] = Explosion.y + 37;
 					sparksPositions[r + 75][0] = Explosion.x + 37;
 					sparksPositions[r + 75][1] = Explosion.y + 30;
-					// w miejscach tablicy od indeksach 2 oraz 3 przechowuje randomowo wygenerowane inty,
-					// ktore nadadza kierunek ruchu odlamkow
+
 					sparksPositions[r][2] = rand() % 6;
 					sparksPositions[r][3] = rand() % 6;
 					sparksPositions[r + 25][2] = rand() % 7;
@@ -571,21 +581,17 @@ int main()
 			}
 
 
-			// sprawdzanie czy gracz zostal trafiony
 			if (distanceCalculate(EnemyShot.x + 5, EnemyShot.y + 50, Player.x + 50, Player.y + 60) < Player.hitDistance) {
 				Player.lifes--;
 				Player.hitTime = al_get_timer_count(timer);
 			}
 
 
-			// sprawdzanie czy wrog powinien sie już zespawnowac:
 			if ((Enemy.respawnDuration + Enemy.hitTime) == al_get_timer_count(timer)) {
 				Enemy.alive = true;
 			}
 
 
-			// jesli przeciwnik przedzie przez dolna krawedz okna, bedzie ponownie spawnowany,
-			// a gracz straci troche punktow zdrowia
 			if (Enemy.y >= SCALED_HEIGHT) {
 				Enemy.alive = false;
 				Player.lifes--;
@@ -594,14 +600,12 @@ int main()
 			}
 
 
-			// rysowanie przeciwnika jesli ma state obecnego w rozgrywce
 			if (Enemy.alive && al_get_timer_count(timer) > LEVEL_1_START) {
 				Enemy.x = Enemy.x + Enemy.turn;
 				al_draw_bitmap(enemy_sprite, Enemy.x, Enemy.y, 0);
 			}
 
 
-			// renderowanie wystrzalu gracza
 			if (Shot.y > 1) {
 				Shot.y = Shot.y - Shot.vel;
 				al_draw_bitmap(shot_sprite, Shot.x, Shot.y, 0);
@@ -609,8 +613,6 @@ int main()
 			}
 
 
-
-			// renderowanie wystrzalu wroga
 			if (Enemy.y < SCALED_HEIGHT * 0.4) {
 				if (EnemyShot.y > SCALED_HEIGHT || al_get_timer_count(timer) < 50) {
 					EnemyShot.throwed = false;
@@ -622,12 +624,10 @@ int main()
 			}
 
 
-
-			// renderowaie eksplozji
 			if (Explosion.hitTime != 0) {
 				if (al_get_timer_count(timer) - Explosion.hitTime < 8) {
 					if (al_get_timer_count(timer) - Explosion.hitTime < 3) {
-						al_draw_filled_rectangle(0, 0, SCALED_WIDTH, SCALED_HEIGHT, al_map_rgba_f(1, 1, 1, 0.005));
+						al_draw_filled_rectangle(0, 0, SCALED_WIDTH, SCALED_HEIGHT, al_map_rgb(0,255,0));
 					}
 					al_draw_bitmap(expl_sprite, Explosion.x, Explosion.y + al_get_timer_count(timer) - Explosion.hitTime, 0);
 				}
@@ -640,7 +640,28 @@ int main()
 			}
 
 
-			// rysowanie iskier pozostalych po wybuchu
+			if (game_ended) {
+				while (end_view) {
+					ALLEGRO_EVENT event;
+					al_wait_for_event(queue, &event);
+					ALLEGRO_KEYBOARD_STATE keyState;
+					al_get_keyboard_state(&keyState);
+
+					al_draw_text(score_font, al_map_rgb(255, 0, 0), (SCALED_WIDTH / 2) - 97, (SCALED_HEIGHT / 2) - 60, 0, "GAME   OVER");
+					al_draw_text(font, al_map_rgb(0, 0, 0), (SCALED_WIDTH / 2) - 65, (SCALED_HEIGHT / 2) - 20, 0, "your   score");
+					al_draw_text(score_font, al_map_rgb(0, 0, 0), (SCALED_WIDTH / 2) - 13, (SCALED_HEIGHT / 2) + 10, 0, scoreBuf);
+
+					if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE || al_key_down(&keyState, ALLEGRO_KEY_ESCAPE) || al_key_down(&keyState, ALLEGRO_KEY_ENTER))
+					{
+						game_ended = false;
+						running = false;
+						break;
+					}
+					al_flip_display();
+				}
+			}
+
+
 			if (Explosion.throwed && al_get_timer_count(timer) > LEVEL_1_START) {
 				Spark.hitTime = al_get_timer_count(timer);
 			}
@@ -655,6 +676,7 @@ int main()
 					sparksPositions[r + 50][1] = sparksPositions[r + 50][1] + sparksPositions[r + 50][3] + rand() % 2;
 					sparksPositions[r + 75][0] = sparksPositions[r + 75][0] + sparksPositions[r + 75][2] + rand() % 2;
 					sparksPositions[r + 75][1] = sparksPositions[r + 75][1] + sparksPositions[r + 75][3] + rand() % 2;
+
 					al_draw_filled_rectangle(sparksPositions[r][0], sparksPositions[r][1] + tmp,
 						sparksPositions[r][0] + 1, sparksPositions[r][1] + 1 + tmp,
 						al_map_rgb(240 - tmp * 2, 171 - tmp * 2, 0));
@@ -672,52 +694,48 @@ int main()
 			}
 
 
-			// renderowanie czerwonego ekranu kiedy zostanie trafiony gracz
 			if (al_get_timer_count(timer) > 50) {
 				if (al_get_timer_count(timer) - Player.hitTime < 3) {
-					al_draw_filled_rectangle(0, 0, SCALED_WIDTH, SCALED_HEIGHT, al_map_rgba_f(255, 0, 0, 0.005));
+					al_draw_filled_rectangle(0, 0, SCALED_WIDTH, SCALED_HEIGHT, al_map_rgb(0, 255, 0));
 				}
 			}
 
 
-			// Renderowanie HUD
 			if (Player.lifes <= 0) {
-				// renderowanie końca gry
-				// endGame();
+				if (!game_ended) {
+					Explosion.x = Player.x;
+					Explosion.y = Player.y;
+					Explosion.hitTime = al_get_timer_count(timer);
+					Explosion.throwed = true;
+					game_ended = true;
+				}
 			}
 			else {
-				// zapisywanie int-ow score i lifes do const char *:
 				sprintf_s(scoreBuf, "%d", Player.score);
 				sprintf_s(lifesBuf, "%d", Player.lifes);
+				al_draw_bitmap(alien_icon, 10, SCALED_HEIGHT - 50, 0);
 				al_draw_text(font, al_map_rgb(0, 255, 0), 15, SCALED_HEIGHT - 20, 0, scoreBuf);
+				al_draw_bitmap(heart_icon, SCALED_WIDTH - 45, SCALED_HEIGHT - 60,0);
 				al_draw_text(font, al_map_rgb(0, 255, 0), SCALED_WIDTH - 42, SCALED_HEIGHT - 20, 0, lifesBuf);
 			}
 
-
-			// update widoku wykonywany co okrazenie petli
-
-			setTiles(Player.x, Player.y);
-			drawTiles(20, 20, Player.x, Player.y);
 			al_flip_display();
 
 
 		}
 	}
 
-
-	// Otwieranie pliku z njwyzszym wynikiem, by porownac go z wynikiem ostatniej rozgrywki
 	FILE* highest_score_file_compare;
 	fopen_s(&highest_score_file_compare, "hs.txt", "r");
 
 
 	if (highest_score_file_compare == NULL) {
-		printf_s("Blad dostepu do pliku");
+		printf_s("Blad dostepu do pliku\n");
 	}
 	else {
 		while (!feof(highest_score_file_compare)) {
 			if (fgets(highestScoreBuf, 256, highest_score_file_compare) == NULL) break;
 		}
-		// w razie gdy ostatnio otrzymany wynik jest wiekszy od aktualnego rekordu, jest zapisywany do pliku
 		int actualHighest = atoi(highestScoreBuf);
 		if (Player.score > actualHighest) {
 			fclose(highest_score_file_compare);
@@ -728,8 +746,6 @@ int main()
 	}
 
 
-
-	// czyszczenie pamięci z utworzonych obiektów po wyjsciu z rozgrywki
 	al_destroy_event_queue(queue);
 	al_destroy_timer(timer);
 	al_destroy_display(display);
@@ -740,6 +756,9 @@ int main()
 	al_destroy_bitmap(shot_sprite);
 	al_destroy_bitmap(enemy_shot_sprite);
 	al_destroy_bitmap(expl_sprite);
+	al_destroy_bitmap(heart_icon);
+	al_destroy_bitmap(logo);
+	al_destroy_bitmap(alien_icon); 
 	al_destroy_font(font);
 
 
@@ -747,72 +766,6 @@ int main()
 	"Tw\242rca: Micha\210 Mytych\nElektroniczne Przetwarzanie Informacji,\nUniwersytet Jegiello\344ski\n24.05.2020\nVisual Studio 2019\nMicrosoft Visual C++");
 	getchar();
 
+
 	return 0;
 }
-
-/*
-void drawMap(int** map, int player_x, int player_y) {
-
-
-
-	for (int i = 0; i < mapSizeX; i++) {
-		for (int j = 0; j < mapSizeY; j++) {
-			if (map[i][j] == 0) {
-				al_draw_filled_rectangle(i * BLOCK_SIZE, j * BLOCK_SIZE,
-					i * BLOCK_SIZE + BLOCK_SIZE, j * BLOCK_SIZE + BLOCK_SIZE, al_map_rgb(0+j*5, 0, 0));
-			}
-		}
-	}
-}*/
-
-
-void setTiles(int player_location_x, int player_location_y) {
-	map_width = MAP_SIZE_X * SCALED_WIDTH;
-	map_height = MAP_SIZE_Y * SCALED_HEIGHT;
-	if (map_width % player_location_x == 0) {
-		tile_indexes[0] = map_width / player_location_x;
-	}
-	if (map_height % player_location_y == 0) {
-		tile_indexes[1] = map_height / player_location_y;
-	}
-}
-
-
-void drawTiles(int tile_x_index, int tile_y_index, int player_x, int player_y) {
-	// rysuj tile w ktorym jest gracz
-	al_draw_filled_rectangle(SCALED_WIDTH - player_x / map_width, SCALED_HEIGHT - player_y / map_height, SCALED_WIDTH - player_x / map_width,
-		SCALED_HEIGHT - player_y / map_height, al_map_rgb(tile_x_index * 10, tile_y_index * 10, 100));
-
-	// rysuj tiles ktore są sąsiadami tego w którym jest gracz
-}
-
-
-/*
-Przedzialy bloczkow mapy
-jesli w bloczku ( przedziale ) = rysuj sąsiednie bloczki
-int map_width;
-int map_height;
-int player_location_x;
-int player_location_y;
-int tile_x_index;
-int tile_y_index;
-
-setTiles(){
-	MAP_SIZE_X * SCALED_WIDTH = map_width;
-	MAP_SIZE_Y * SCALED_HEIGHT = map_height;
-	if (map_width % player_location_x == 0){
-		tile_x_index = map_width / player_location_x;
-	}
-	if (map_height % player_location_y == 0){
-		tile_y_index = map_height / player_location_y;
-	}
-}
-drawTiles(tile_x_index, tile_y_index, player_x, player_y){
-	// rysuj tile w ktorym jest gracz
-	al_draw_filled_rectangle(SCALED_WIDTH - player_x/map_width, SCALED_HEIGHT - player_y/map_height, SCALED_WIDTH - player_x/map_width, 
-	SCALED_HEIGHT - player_y/map_height, al_map_rgb(tile_x_index * 10, tile_y_index * 10, 100));
-
-	// rysuj tiles ktore są sąsiadami tego w którym jest gracz
-}
-
-*/
