@@ -11,7 +11,8 @@ public:
 	int objSlowDown;
 	int moveState;
 	int prevMoveState;
-
-
-
+	int levelHardness;
+	int lifes;
+	int score;
+	int hitDistance;
 };

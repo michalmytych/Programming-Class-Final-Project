@@ -9,6 +9,12 @@
 #include <fstream>
 
 
+#include "MovableObject.h"
+#include "Player.h"
+#include "Enemy.h"
+#include "Explosion.h"
+#include "Shot.h"
+
 
 #define SCALED_WIDTH 640
 #define SCALED_HEIGHT 360
@@ -17,29 +23,6 @@
 #define SCORE_FONT_SIZE 40
 #define LEVEL_1_START 150
 
-
-
-class MovableObject {
-public:
-	int x;							
-	int y;							
-	float vel;						
-	float accel;					
-	float throttle;					
-	float maxVel;					
-	int objSlowDown;				
-	int moveState;					
-	int prevMoveState;				 
-	bool alive;						
-	float respawnDuration;			
-	float hitTime;					
-	int levelHardness;				
-	int lifes;						
-	bool throwed;					
-	int score;						
-	int turn;						
-	int hitDistance;				
-};
 
 
 

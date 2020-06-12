@@ -4,11 +4,10 @@
 #include "MovableObject.h"
 
 
-class Player : MovableObject {
+class Enemy : MovableObject {
 public:
 	float throttle;
 	bool alive;
-
-
-
+	int turn;
+	int hitDistance;
 };
