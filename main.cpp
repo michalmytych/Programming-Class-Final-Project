@@ -135,7 +135,6 @@ int main()
 	Player.x = SCALED_WIDTH / 2;
 	Player.y = SCALED_HEIGHT / 1.3;
 	Player.vel = 0;
-	Player.throttle = 1.4;
 	Player.accel = 0.2;
 	Player.maxVel = 10;
 	Player.objSlowDown = 4;
