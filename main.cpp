@@ -16,6 +16,8 @@
 #include "CalcLib.h"
 
 
+
+
 #define SCALED_WIDTH 640
 #define SCALED_HEIGHT 360
 #define FPS 65
@@ -49,8 +51,10 @@ int main()
 	ALLEGRO_TRANSFORM transformation;
 
 
+
 	FILE* highest_score_file;
 	fopen_s(&highest_score_file, "hs.txt", "r+");
+
 
 
 	if (highest_score_file == NULL) {
@@ -91,7 +95,9 @@ int main()
 	}
 
 
+
 	srand(NULL);
+
 
 
 	Player Player;
@@ -164,8 +170,10 @@ int main()
 
 
 
+
 	const float scale_factor_x = ((float)al_get_display_width(display)) / SCALED_WIDTH;
 	const float scale_factor_y = ((float)al_get_display_height(display)) / SCALED_HEIGHT;
+
 
 
 
@@ -175,8 +183,10 @@ int main()
 
 
 
+
 	al_install_keyboard();
 	al_install_mouse();
+
 
 
 
@@ -184,6 +194,7 @@ int main()
 	al_register_event_source(queue, al_get_mouse_event_source());
 	al_register_event_source(queue, al_get_display_event_source(display));
 	al_register_event_source(queue, al_get_timer_event_source(timer));
+
 
 
 
@@ -209,6 +220,7 @@ int main()
 	assert(score_font != NULL);
 
 
+
 	int player_sprite_width = al_get_bitmap_width(player_sprite);
 	int enemy_sprite_width = al_get_bitmap_width(enemy_sprite);
 
@@ -225,6 +237,7 @@ int main()
 		al_wait_for_event(queue, &event);
 		ALLEGRO_KEYBOARD_STATE keyState;
 		al_get_keyboard_state(&keyState);
+
 
 
 		if (al_get_timer_count(timer) < 5) {
@@ -251,7 +264,7 @@ int main()
 					starsPositions[i][0] = rand() % SCALED_WIDTH;
 					starsPositions[i][1] = 0 - al_get_timer_count(timer) * 1.05;
 				}
-				Calculations::drawStar(starsPositions[i][0], starsPositions[i][1] + al_get_timer_count(timer) * 1.05);
+				clclib::Calculations::drawStar(starsPositions[i][0], starsPositions[i][1] + al_get_timer_count(timer) * 1.05);
 			}
 
 			for (i = 0; i < 99; i++) {
@@ -259,11 +272,14 @@ int main()
 					smallStarsPos[i][0] = rand() % SCALED_WIDTH;
 					smallStarsPos[i][1] = 0 - al_get_timer_count(timer) * 1.01;
 				}
-				drawSmallStar(smallStarsPos[i][0], smallStarsPos[i][1] + al_get_timer_count(timer) * 1.01);
+				clclib::Calculations::drawSmallStar(smallStarsPos[i][0], smallStarsPos[i][1] + al_get_timer_count(timer) * 1.01);
 			}
 
 
+
 			al_hide_mouse_cursor(display);
+
+
 
 
 			// *** START MENU CONTROLLER ***
@@ -287,6 +303,8 @@ int main()
 		}
 
 
+
+
 		// *** START VIEW ***
 
 		al_draw_bitmap(logo, (SCALED_WIDTH / 2) - al_get_bitmap_width(logo) / 2, ((SCALED_HEIGHT / 2) - al_get_bitmap_height(logo) / 2 )- 70, 0);
@@ -307,6 +325,7 @@ int main()
 	al_set_timer_count(timer, 0);
 
 
+
 	// *** GAME LOOP ***
 
 	while (running)
@@ -322,6 +341,7 @@ int main()
 
 
 		Explosion.throwed = false;
+
 
 
 
@@ -392,7 +412,9 @@ int main()
 
 
 
+
 		// *** GAME VIEW ***
+
 		if (Player.moveState == 1)
 		{
 			Player.prevMoveState = 1;
@@ -469,7 +491,7 @@ int main()
 					starsPositions[i][0] = rand() % SCALED_WIDTH;
 					starsPositions[i][1] = 0 - al_get_timer_count(timer) * 1.45;
 				}
-				drawStar(starsPositions[i][0], starsPositions[i][1] + al_get_timer_count(timer) * 1.45);
+				clclib::Calculations::drawStar(starsPositions[i][0], starsPositions[i][1] + al_get_timer_count(timer) * 1.45);
 			}
 
 
@@ -479,14 +501,14 @@ int main()
 					smallStarsPos[i][0] = rand() % SCALED_WIDTH;
 					smallStarsPos[i][1] = 0 - al_get_timer_count(timer) * 1.4;
 				}
-				drawSmallStar(smallStarsPos[i][0], smallStarsPos[i][1] + al_get_timer_count(timer) * 1.4);
+				clclib::Calculations::drawSmallStar(smallStarsPos[i][0], smallStarsPos[i][1] + al_get_timer_count(timer) * 1.4);
 			}
 			al_draw_bitmap(player_sprite, Player.x, Player.y, 0);
 
 
 
 			if (Enemy.alive && al_get_timer_count(timer) > LEVEL_1_START) {
-				if (distanceCalculate(Shot.x + 40, Shot.y, Enemy.x + 60, Enemy.y + 60) < Enemy.hitDistance) {
+				if (clclib::Calculations::distanceCalculate(Shot.x + 40, Shot.y, Enemy.x + 60, Enemy.y + 60) < Enemy.hitDistance) {
 					Explosion.x = Enemy.x;
 					Explosion.y = Enemy.y;
 					Enemy.alive = false;
@@ -519,6 +541,7 @@ int main()
 			}
 
 
+
 			if (Explosion.throwed) {
 				for (int r = 0; r < 25; r++) {
 
@@ -543,7 +566,8 @@ int main()
 			}
 
 
-			if (distanceCalculate(EnemyShot.x + 5, EnemyShot.y + 50, Player.x + 50, Player.y + 60) < Player.hitDistance) {
+
+			if (clclib::Calculations::distanceCalculate(EnemyShot.x + 5, EnemyShot.y + 50, Player.x + 50, Player.y + 60) < Player.hitDistance) {
 				Player.lifes--;
 				Player.hitTime = al_get_timer_count(timer);
 			}
@@ -602,6 +626,7 @@ int main()
 			}
 
 
+
 			if (game_ended) {
 				while (end_view) {
 					ALLEGRO_EVENT event;
@@ -622,6 +647,7 @@ int main()
 					al_flip_display();
 				}
 			}
+
 
 
 			if (Explosion.throwed && al_get_timer_count(timer) > LEVEL_1_START) {
@@ -656,11 +682,13 @@ int main()
 			}
 
 
+
 			if (al_get_timer_count(timer) > 50) {
 				if (al_get_timer_count(timer) - Player.hitTime < 3) {
 					al_draw_filled_rectangle(0, 0, SCALED_WIDTH, SCALED_HEIGHT, al_map_rgb(0, 255, 0));
 				}
 			}
+
 
 
 			if (Player.lifes <= 0) {
@@ -681,11 +709,17 @@ int main()
 				al_draw_text(font, al_map_rgb(0, 255, 0), SCALED_WIDTH - 42, SCALED_HEIGHT - 20, 0, lifesBuf);
 			}
 
+
 			al_flip_display();
 
 
 		}
 	}
+
+
+	
+	// *** SCORE SAVE ***
+
 
 	FILE* highest_score_file_compare;
 	fopen_s(&highest_score_file_compare, "hs.txt", "r");
@@ -706,6 +740,7 @@ int main()
 		}
 		fclose(highest_score_file_compare);
 	}
+
 
 
 	al_destroy_event_queue(queue);

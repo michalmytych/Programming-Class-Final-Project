@@ -1,7 +1,8 @@
 #pragma once
 
 
-namespace Calculations
+
+namespace clclib
 {
     class Calculations
     {

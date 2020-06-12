@@ -2,6 +2,8 @@
 
 
 
+
+
 class MovableObject {
 public:
     int x;

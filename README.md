@@ -1,8 +1,7 @@
 # Programming Class Final Project - Classic Space Invaders
 
 ### Programming-Class-Final-Project
-It's a classic 2D Space Invaders - style game I created with C++ and Allegro5 for my Introduction to Programming classes final project. 
-I decided to use one C++ file, because game isn't really complicated.
+It's a classic 2D Space Invaders - style game I created with C++ and Allegro5 for my Introduction to Programming classes final project.
 
 ## COMPILATION
 The best way to run this project is to set up new console application project in Visual Studio 2019, include GraAllegroPierwszyRelease.cpp
@@ -20,6 +19,3 @@ Assets folder must be in Release folder of the solution as well as all resource 
 
 Preview:
 ![cccc](https://user-images.githubusercontent.com/59512535/83978236-5473e200-a906-11ea-88a0-8b76a74981bf.png)
-
-## Plans for future
-Game already works, but I will propably change the structure of the project in accordance with the MVC design pattern and the Single Responsibility Principle.
