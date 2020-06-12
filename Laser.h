@@ -4,7 +4,7 @@
 #include "MovableObject.h"
 
 
-class Explosion : MovableObject {
+class Laser : public MovableObject {
 public:
 	bool throwed;
 };

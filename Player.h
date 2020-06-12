@@ -4,7 +4,7 @@
 #include "MovableObject.h"
 
 
-class Player : MovableObject {
+class Player : public MovableObject {
 public:
 	float accel;
 	float maxVel;

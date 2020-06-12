@@ -3,7 +3,6 @@
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
-#include <cmath>
 #include <stdlib.h>
 #include <stdio.h>
 #include <fstream>
@@ -13,7 +12,8 @@
 #include "Player.h"
 #include "Enemy.h"
 #include "Explosion.h"
-#include "Shot.h"
+#include "Laser.h"
+#include "CalcLib.h"
 
 
 #define SCALED_WIDTH 640
@@ -41,26 +41,6 @@ bool menu = true;
 bool end_view = true;
 bool game_ended = false;
 
-
-
-void drawStar(int x, int y) {
-	al_draw_pixel(x, y, al_map_rgb(255, 255, 255));
-	al_draw_pixel(x + 1, y, al_map_rgb(255, 255, 255));
-	al_draw_pixel(x, y + 1, al_map_rgb(255, 255, 255));
-	al_draw_pixel(x - 1, y, al_map_rgb(255, 255, 255));
-	al_draw_pixel(x, y - 1, al_map_rgb(255, 255, 255));
-}
-
-
-void drawSmallStar(int x, int y) {
-	al_draw_pixel(x, y, al_map_rgb(255, 255, 255));
-}
-
-
-float distanceCalculate(float x1, float y1, float x2, float y2)
-{
-	return sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
-}
 
 
 
@@ -114,7 +94,7 @@ int main()
 	srand(NULL);
 
 
-	MovableObject Player;
+	Player Player;
 	Player.x = SCALED_WIDTH / 2;
 	Player.y = SCALED_HEIGHT / 1.3;
 	Player.vel = 0;
@@ -130,13 +110,13 @@ int main()
 	Player.hitDistance = 50;
 
 
-	MovableObject Shot;
+	Laser Shot;
 	Shot.x = Player.x;
 	Shot.y = -72;
 	Shot.vel = 20;
 
 
-	MovableObject Enemy;
+	Enemy Enemy;
 	Enemy.x = SCALED_WIDTH / 3;
 	Enemy.y = -70;
 	Enemy.throttle = 3;
@@ -147,14 +127,14 @@ int main()
 	Enemy.hitDistance = 80;
 
 
-	MovableObject EnemyShot;
+	Laser EnemyShot;
 	EnemyShot.x = Enemy.x;
 	EnemyShot.y = SCALED_HEIGHT + 70;
 	EnemyShot.vel = 18;
 	EnemyShot.throwed = false;
 
 
-	MovableObject Explosion;
+	Explosion Explosion;
 	Explosion.x = Enemy.x;
 	Explosion.y = Enemy.y;
 	Explosion.hitTime = 0;
@@ -271,7 +251,7 @@ int main()
 					starsPositions[i][0] = rand() % SCALED_WIDTH;
 					starsPositions[i][1] = 0 - al_get_timer_count(timer) * 1.05;
 				}
-				drawStar(starsPositions[i][0], starsPositions[i][1] + al_get_timer_count(timer) * 1.05);
+				Calculations::drawStar(starsPositions[i][0], starsPositions[i][1] + al_get_timer_count(timer) * 1.05);
 			}
 
 			for (i = 0; i < 99; i++) {
