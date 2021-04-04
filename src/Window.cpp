@@ -16,6 +16,13 @@ Window::Window()
 	assert(this->scoreFont!= NULL);
 }
 
+Window::~Window()
+{
+	al_destroy_display(this->display);
+	al_destroy_font(this->font);
+	al_destroy_font(this->scoreFont);
+}
+
 void Window::initScreenScaleTransformation()
 {
 	const float scale_factor_x = ((float)al_get_display_width(display)) / SCALED_WIDTH;

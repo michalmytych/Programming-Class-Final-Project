@@ -8,3 +8,8 @@ IMovableObject::IMovableObject(const char filePath[] = NULL)
 	assert(this->sprite != NULL);
 	this->spriteWidth = al_get_bitmap_width(this->sprite);
 }
+
+IMovableObject::~IMovableObject()
+{
+	al_destroy_bitmap(this->sprite);
+}

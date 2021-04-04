@@ -6,6 +6,7 @@ class IMovableObject
 {
 public:	
 	IMovableObject(const char filePath[]);
+	~IMovableObject();
 	
 	int spriteWidth = 0;
 

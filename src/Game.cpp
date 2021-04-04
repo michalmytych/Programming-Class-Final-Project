@@ -11,9 +11,13 @@
 
 Game::Game()
 {
-	// INITIALIZE OTHER VARIABLES
-	window = new Window();
-	player = new Player('../assets/xwing.jpg');
+	window = new Window();		
+}
+
+Game::~Game()
+{
+	al_destroy_event_queue(this->queue);
+	al_destroy_timer(this->timer);
 }
 
 void Game::getOrCreateHighestScoreFile()
@@ -34,6 +38,29 @@ void Game::getOrCreateHighestScoreFile()
 		}
 		fclose(highestScoreFile);
 	}
+}
+
+void Game::saveScoreAfterGame()
+{
+	FILE* highestScoreFileCompare;
+	fopen_s(&highestScoreFileCompare, "hs.txt", "r");
+
+
+	if (highestScoreFileCompare == NULL) { printf_s("Blad dostepu do pliku\n"); exit; }
+	
+	while (!feof(highestScoreFileCompare)) {
+		if (fgets(this->highestScoreBuf, 256, highestScoreFileCompare) == NULL) break;
+	}
+	
+	int actualHighest = atoi(this->highestScoreBuf);
+	
+	if (this->player->score > actualHighest) {
+		fclose(highestScoreFileCompare);
+		fopen_s(&highestScoreFileCompare, "hs.txt", "w");
+		fprintf_s(highestScoreFileCompare, "%d ", this->player->score);
+	}
+	
+	fclose(highestScoreFileCompare);
 }
 
 int Game::saveInitAllegroAddons()
@@ -77,12 +104,15 @@ void Game::startTimer()
 
 void Game::init()
 {
-	getOrCreateHighestScoreFile();
-	createEventsQueue();
-	initBitmaps();
-	installDevices();
-	registerEventSources();	
-	startTimer();
+	// That order of methods calls is obligatory
+	this->getOrCreateHighestScoreFile();
+	this->createEventsQueue();
+	this->initBitmaps();
+	this->installDevices();
+	this->registerEventSources();	
+	this->startTimer();
+
+	//this->player = new Player('../assets/xwing.jpg');
 }
 
 void Game::initBitmaps()
@@ -97,12 +127,25 @@ void Game::installDevices()
 	al_install_mouse();
 }
 
+void Game::uninstallDevices()
+{
+	al_uninstall_keyboard();
+	al_uninstall_mouse();
+}
+
 void Game::registerEventSources()
 {
 	al_register_event_source(this->queue, al_get_keyboard_event_source());
 	al_register_event_source(this->queue, al_get_mouse_event_source());
 	al_register_event_source(this->queue, al_get_display_event_source(this->window->display));
 	al_register_event_source(this->queue, al_get_timer_event_source(timer));
+}
+
+void Game::displayAuthorInfo()
+{
+	// Polish chars are still displayed not properly
+	printf_s("Tw\242rca: Micha\210 Mytych\nElektroniczne Przetwarzanie Informacji,\nUniwersytet Jegiello\344ski\n24.05.2020\nVisual Studio 2019\nMicrosoft Visual C++");
+	getchar();
 }
 
 void Game::run()
@@ -122,7 +165,7 @@ void Game::runLoops()
 
 	al_set_timer_count(this->timer, 0);
 
-	this->gameLoop = new GameLoop;
+	this->gameLoop = new GameLoop(this);
 
 	while (this->runningLoop)
 	{
@@ -133,45 +176,6 @@ void Game::runLoops()
 void Game::runExitTasks()
 {
 	// run tasks you want to execute before exiting game
-	FILE* highestScoreFileCompare;
-	fopen_s(&highestScoreFileCompare, "hs.txt", "r");
-
-
-	if (highestScoreFileCompare == NULL) {
-		printf_s("Blad dostepu do pliku\n");
-	}
-	else {
-		while (!feof(highestScoreFileCompare)) {
-			if (fgets(this->highestScoreBuf, 256, highestScoreFileCompare) == NULL) break;
-		}
-		int actualHighest = atoi(this->highestScoreBuf);
-		if (this->player->score > actualHighest) {
-			fclose(highestScoreFileCompare);
-			fopen_s(&highestScoreFileCompare, "hs.txt", "w");
-			fprintf_s(highestScoreFileCompare, "%d ", this->player->score);
-		}
-		fclose(highestScoreFileCompare);
-	}
-
-
-
-	al_destroy_event_queue(queue);
-	al_destroy_timer(timer);
-	al_destroy_display(display);
-	al_uninstall_keyboard();
-	al_uninstall_mouse();
-	al_destroy_bitmap(player_sprite);
-	al_destroy_bitmap(enemy_sprite);
-	al_destroy_bitmap(shot_sprite);
-	al_destroy_bitmap(enemy_shot_sprite);
-	al_destroy_bitmap(expl_sprite);
-	al_destroy_bitmap(heart_icon);
-	al_destroy_bitmap(logo);
-	al_destroy_bitmap(alien_icon);
-	al_destroy_font(font);
-
-
-	printf_s(
-		"Tw\242rca: Micha\210 Mytych\nElektroniczne Przetwarzanie Informacji,\nUniwersytet Jegiello\344ski\n24.05.2020\nVisual Studio 2019\nMicrosoft Visual C++");
-	getchar();
+	this->saveScoreAfterGame();
+	this->uninstallDevices();	
 }

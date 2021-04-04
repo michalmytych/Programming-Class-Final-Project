@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../IView.h"
+#include "IView.h"
 
 class Menu : public IView
 {

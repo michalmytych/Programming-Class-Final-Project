@@ -1,24 +1,31 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <allegro5/allegro.h>
 
 #include "GameLoop.h"
+#include "Game.h"
 
-GameLoop::GameLoop()
+GameLoop::GameLoop(Game* game)
 {
-
+	this->game = game;
 }
 
 void GameLoop::runPollingLoop()
 {
+	/**
+	
+	REFACTOR
+	
+	*/
 	srand(NULL);
 
 	ALLEGRO_EVENT event;
-	al_wait_for_event(queue, &event);
+	al_wait_for_event(this->game->queue, &event);
 	ALLEGRO_KEYBOARD_STATE keyState;
 	al_get_keyboard_state(&keyState);
 
 
-	al_hide_mouse_cursor(display);
+	al_hide_mouse_cursor(this->game->window->display);
 
 
 	Explosion.throwed = false;
