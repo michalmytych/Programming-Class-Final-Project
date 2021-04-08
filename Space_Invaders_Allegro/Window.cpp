@@ -37,3 +37,8 @@ void Window::setFullscreenMode()
 {
 	if (this->fullscreenMode) al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
 }
+
+void Window::hideCursor()
+{
+	al_hide_mouse_cursor(this->display);
+}

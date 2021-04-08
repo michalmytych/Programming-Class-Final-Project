@@ -19,6 +19,16 @@ Game::~Game()
 	al_destroy_timer(this->timer);
 }
 
+void Game::endGameLoop()
+{
+	this->runningLoop = false;
+}
+
+void Game::closeMenu()
+{
+	this->showMenu = false;
+}
+
 void Game::getOrCreateHighestScoreFile()
 {
 	FILE* highestScoreFile;

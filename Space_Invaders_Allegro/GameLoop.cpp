@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
 
 #include "GameLoop.h"
 #include "Game.h"
@@ -12,85 +13,57 @@ GameLoop::GameLoop(Game* game)
 
 void GameLoop::runPollingLoop()
 {
-	/**
-	
-	REFACTOR
-	
+	/**	
+	REFACTOR	
 	*/
 	srand(NULL);
 
 	ALLEGRO_EVENT event;
 	al_wait_for_event(Game::queue, &event);
+	
 	ALLEGRO_KEYBOARD_STATE keyState;
 	al_get_keyboard_state(&keyState);
 
-
-	al_hide_mouse_cursor(this->game->window->display);
-
+	this->game->window->hideCursor();
 
 	Explosion.throwed = false;
 
-
-	// *** GAME CONTROLLER ***
+	// *** PLAYER CONTROLLER ***
 
 	if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE || al_key_down(&keyState, ALLEGRO_KEY_ESCAPE))
 	{
-		this->game->runningLoop = false;
+		this->game->endGameLoop();
 	}
-
-
 
 	if (al_key_down(&keyState, ALLEGRO_KEY_A) || al_key_down(&keyState, ALLEGRO_KEY_LEFT))
 	{
-		if (game->player->prevMoveState == 2)
-		{
-			game->player->setVelocity(game->player->getVelocity() / game->player->objSlowDown);
-		}
-		game->player->moveState = 1;
-		if (game->player->getVelocity() < game->player->maxVel)
-		{
-			game->player->setVelocity(game->player->getVelocity() + game->player->accel);
-		}
+		game->player->setSpriteMoveState('L');		// set move direction to left
 	}
 	else if (al_key_down(&keyState, ALLEGRO_KEY_D) || al_key_down(&keyState, ALLEGRO_KEY_RIGHT))
 	{
-		if (game->player->prevMoveState == 1)
-		{
-			game->player->setVelocity(game->player->getVelocity() / game->player->objSlowDown);
-		}
-
-		game->player->moveState = 2;
-
-		if (game->player->getVelocity() < game->player->maxVel)
-		{
-			game->player->setVelocity(game->player->getVelocity() + game->player->accel);
-		}
+		game->player->setSpriteMoveState('R');		// set move direction to right
 	}
 	else
 	{
-		if (Player.vel >= 0.2)
-		{
-			Player.vel = Player.vel - Player.accel;
-		}
-		Player.moveState = 3;
+		game->player->setSpriteMoveState('S');		// set move state to 'stopping'
 	}
-
-
 
 	if (al_key_down(&keyState, ALLEGRO_KEY_SPACE))
 	{
+		/*
 		if (Shot.y < 0) {
 			Shot.y = Player.y;
 			Shot.x = Player.x;
 		}
+		REFACTOR TO:
+		*/
+		game->player->fireShot();
 	}
 
-
-
-	if (Enemy.alive && al_get_timer_count(timer) > LEVEL_1_START)
+	if (Enemy.alive && al_get_timer_count(game->timer) > game->window->LEVEL_1_START)
 	{
 		if (!EnemyShot.throwed) {
-			if (EnemyShot.y > SCALED_HEIGHT) {
+			if (EnemyShot.y > game->window->SCALED_HEIGHT) {
 				EnemyShot.y = Enemy.y + enemy_sprite_width / 2;
 				EnemyShot.x = Enemy.x + enemy_sprite_width / 2;
 				EnemyShot.throwed = true;
@@ -98,91 +71,39 @@ void GameLoop::runPollingLoop()
 		}
 	}
 
-
-
-
 	// *** GAME VIEW ***
 
-	if (Player.moveState == 1)
-	{
-		Player.prevMoveState = 1;
-		Player.x = Player.x - Player.vel;
-	}
-	else if (Player.moveState == 2)
-	{
-		Player.prevMoveState = 2;
-		Player.x = Player.x + Player.vel;
-	}
-	else
-	{
-		if (Player.prevMoveState == 1)
-		{
-			Player.x = Player.x - Player.vel;
-		}
-		else if (Player.prevMoveState == 2)
-		{
-			Player.x = Player.x + Player.vel;
-		}
-		else
-		{
-			if (Player.prevMoveState == 1)
-			{
-				Player.x = Player.x - Player.vel;
-			}
-			else if (Player.prevMoveState == 2)
-			{
-				Player.x = Player.x + Player.vel;
-			}
-		}
-	}
+	game->player->renderSprite();
 
-
-
-	if (Enemy.alive && al_get_timer_count(timer) > LEVEL_1_START) {
+	if (Enemy.alive && al_get_timer_count(game->timer) > game->window->LEVEL_1_START) {
 		Enemy.y = Enemy.y + Enemy.throttle;
 	}
 
 
 
-	if (Player.x <= 0)
-	{
-		Player.x = 0;
-	}
-	if (Player.x > (SCALED_WIDTH - player_sprite_width))
-	{
-		Player.x = SCALED_WIDTH - player_sprite_width;
-	}
-
-
-
-	if (al_get_timer_count(timer) < 5) {
-		for (i = 0; i < 50; i++) {
-			starsPositions[i][0] = rand() % SCALED_WIDTH;
-			starsPositions[i][1] = rand() % SCALED_HEIGHT;
+	if (al_get_timer_count(game->timer) < 5) {
+		for (int i = 0; i < 50; i++) {
+			game->window->starsPositions[i][0] = rand() % game->window->SCALED_WIDTH;
+			game->window->starsPositions[i][1] = rand() % game->window->SCALED_HEIGHT;
 		}
-		for (i = 0; i < 100; i++) {
-			smallStarsPos[i][0] = rand() % SCALED_WIDTH;
-			smallStarsPos[i][1] = rand() % SCALED_HEIGHT;
+		for (int i = 0; i < 100; i++) {
+			game->window->smallStarsPos[i][0] = rand() % game->window->SCALED_WIDTH;
+			game->window->smallStarsPos[i][1] = rand() % game->window->SCALED_HEIGHT;
 		}
 	}
-
-
 
 	if (event.type == ALLEGRO_EVENT_TIMER)
 	{
 		al_clear_to_color(al_map_rgba_f(0, 0, 0, 1));
 
-
-
-		for (i = 0; i < 49; i++) {
-			if (starsPositions[i][1] + al_get_timer_count(timer) > SCALED_HEIGHT) {	// jesli wyjdzie poza dolna krawedz, ustalana nowa pozycja
-				starsPositions[i][0] = rand() % SCALED_WIDTH;
-				starsPositions[i][1] = 0 - al_get_timer_count(timer) * 1.45;
+		for (int i = 0; i < 49; i++) {
+			if (game->window->starsPositions[i][1] + al_get_timer_count(game->timer) > game->window->SCALED_HEIGHT) {	// jesli wyjdzie poza dolna krawedz, ustalana nowa pozycja
+				game->window->starsPositions[i][0] = rand() % game->window->SCALED_WIDTH;
+				game->window->starsPositions[i][1] = 0 - al_get_timer_count(game->timer) * 1.45;
 			}
-			clclib::Calculations::drawStar(starsPositions[i][0], starsPositions[i][1] + al_get_timer_count(timer) * 1.45);
+			clclib::Calculations::drawStar(game->window->starsPositions[i][0], 
+				game->window->starsPositions[i][1] + al_get_timer_count(game->timer) * 1.45);
 		}
-
-
 
 		for (i = 0; i < 99; i++) {
 			if (smallStarsPos[i][1] + al_get_timer_count(timer) > SCALED_HEIGHT) {
@@ -192,8 +113,6 @@ void GameLoop::runPollingLoop()
 			clclib::Calculations::drawSmallStar(smallStarsPos[i][0], smallStarsPos[i][1] + al_get_timer_count(timer) * 1.4);
 		}
 		al_draw_bitmap(player_sprite, Player.x, Player.y, 0);
-
-
 
 		if (Enemy.alive && al_get_timer_count(timer) > LEVEL_1_START) {
 			if (clclib::Calculations::distanceCalculate(Shot.x + 40, Shot.y, Enemy.x + 60, Enemy.y + 60) < Enemy.hitDistance) {
@@ -219,16 +138,12 @@ void GameLoop::runPollingLoop()
 			}
 		}
 
-
-
 		if (Enemy.x <= enemy_sprite_width) {
 			Enemy.turn = 0;
 		}
 		if (Enemy.x >= SCALED_WIDTH - enemy_sprite_width) {
 			Enemy.turn = 0;
 		}
-
-
 
 		if (Explosion.throwed) {
 			for (int r = 0; r < 25; r++) {
@@ -253,18 +168,14 @@ void GameLoop::runPollingLoop()
 			}
 		}
 
-
-
 		if (clclib::Calculations::distanceCalculate(EnemyShot.x + 5, EnemyShot.y + 50, Player.x + 50, Player.y + 60) < Player.hitDistance) {
 			Player.lifes--;
 			Player.hitTime = al_get_timer_count(timer);
 		}
 
-
 		if ((Enemy.respawnDuration + Enemy.hitTime) == al_get_timer_count(timer)) {
 			Enemy.alive = true;
 		}
-
 
 		if (Enemy.y >= SCALED_HEIGHT) {
 			Enemy.alive = false;
@@ -273,19 +184,16 @@ void GameLoop::runPollingLoop()
 			Enemy.y = 0;
 		}
 
-
 		if (Enemy.alive && al_get_timer_count(timer) > LEVEL_1_START) {
 			Enemy.x = Enemy.x + Enemy.turn;
 			al_draw_bitmap(enemy_sprite, Enemy.x, Enemy.y, 0);
 		}
-
 
 		if (Shot.y > 1) {
 			Shot.y = Shot.y - Shot.vel;
 			al_draw_bitmap(shot_sprite, Shot.x, Shot.y, 0);
 			al_draw_bitmap(shot_sprite, Shot.x + player_sprite_width - 10, Shot.y, 0);
 		}
-
 
 		if (Enemy.y < SCALED_HEIGHT * 0.4) {
 			if (EnemyShot.y > SCALED_HEIGHT || al_get_timer_count(timer) < 50) {
@@ -296,7 +204,6 @@ void GameLoop::runPollingLoop()
 				al_draw_bitmap(enemy_shot_sprite, EnemyShot.x, EnemyShot.y, 0);
 			}
 		}
-
 
 		if (Explosion.hitTime != 0) {
 			if (al_get_timer_count(timer) - Explosion.hitTime < 8) {
@@ -310,10 +217,7 @@ void GameLoop::runPollingLoop()
 				Explosion.x = Enemy.x;
 				Explosion.y = Enemy.y;
 			}
-
 		}
-
-
 
 		if (game_ended) {
 			while (end_view) {
@@ -335,8 +239,6 @@ void GameLoop::runPollingLoop()
 				al_flip_display();
 			}
 		}
-
-
 
 		if (Explosion.throwed && al_get_timer_count(timer) > LEVEL_1_START) {
 			Spark.hitTime = al_get_timer_count(timer);
@@ -369,15 +271,11 @@ void GameLoop::runPollingLoop()
 
 		}
 
-
-
 		if (al_get_timer_count(timer) > 50) {
 			if (al_get_timer_count(timer) - Player.hitTime < 3) {
 				al_draw_filled_rectangle(0, 0, SCALED_WIDTH, SCALED_HEIGHT, al_map_rgb(0, 255, 0));
 			}
 		}
-
-
 
 		if (Player.lifes <= 0) {
 			if (!game_ended) {
@@ -397,10 +295,7 @@ void GameLoop::runPollingLoop()
 			al_draw_text(font, al_map_rgb(0, 255, 0), SCALED_WIDTH - 42, SCALED_HEIGHT - 20, 0, lifesBuf);
 		}
 
-
 		al_flip_display();
-
-
 	}
 }
-}
+

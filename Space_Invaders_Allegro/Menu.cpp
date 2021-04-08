@@ -57,13 +57,13 @@ void Menu::runViewLoop()
 
 			if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE || al_key_down(&keyState, ALLEGRO_KEY_ESCAPE))
 			{
-				this->window->game->showMenu = false;
-				this->window->game->runningLoop = false;
+				this->window->game->closeMenu();
+				this->window->game->endGameLoop();
 			}
 
 			if (al_key_down(&keyState, ALLEGRO_KEY_ENTER))
 			{
-				this->window->game->showMenu = false;
+				this->window->game->closeMenu();
 			}
 
 			if (al_get_timer_count(Game::timer) % 35 == 0) {
@@ -71,7 +71,7 @@ void Menu::runViewLoop()
 			}
 		}
 
-		// *** START VIEW ***
+		// *** START MENU VIEW ***
 
 		al_draw_bitmap(this->window->logo, (Window::SCALED_WIDTH / 2) - al_get_bitmap_width(this->window->logo) / 2,
 			((Window::SCALED_HEIGHT / 2) - al_get_bitmap_height(this->window->logo) / 2) - 70, 0);

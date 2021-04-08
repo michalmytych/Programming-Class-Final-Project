@@ -12,6 +12,7 @@ public:
 	// * * * REFACTOR * * *
 	int starsPositions[50][2];
 	int smallStarsPos[100][2];
+	// * * * REFACTOR * * *
 
 	Game* game;
 
@@ -23,7 +24,7 @@ public:
 	ALLEGRO_TRANSFORM* transformation = NULL;
 	ALLEGRO_FONT* mainFont = NULL;
 	ALLEGRO_FONT* scoreFont = NULL;
-	ALLEGRO_BITMAP* logo = NULL;
+	ALLEGRO_BITMAP* logo = NULL;	
 	
 	bool fullscreenMode = true;
 	bool textVisible = true;
@@ -34,5 +35,6 @@ public:
 
 	void initScreenScaleTransformation();
 	void setFullscreenMode();
+	void hideCursor();
 };
 
