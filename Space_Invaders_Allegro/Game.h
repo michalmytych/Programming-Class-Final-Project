@@ -10,13 +10,13 @@ class Game
 private:
 	void getOrCreateHighestScoreFile();
 	void saveScoreAfterGame();
+	void createWindow();
 	int saveInitAllegroAddons();
 	void createEventsQueue();
 	void createTimer();
 	void startTimer();
 
-	int FPS = 65;	
-	ALLEGRO_TIMER* timer;
+	int FPS = 65;		
 
 	void init();
 	void runLoops();
@@ -36,14 +36,15 @@ public:
 	Player* player;
 	GameLoop* gameLoop;
 
-	ALLEGRO_EVENT_QUEUE* queue;
+	static ALLEGRO_EVENT_QUEUE* queue;
+	static ALLEGRO_TIMER* timer;
 
 	bool showMenu = true;
 	bool runningLoop = true;
 
+	static char highestScoreBuf[256];
 	char scoreBuf[256];
 	char lifesBuf[256];
-	char highestScoreBuf[256];
 	int levelHardness = 200;
 
 	void run();

@@ -11,7 +11,6 @@
 
 Game::Game()
 {
-	window = new Window();		
 }
 
 Game::~Game()
@@ -63,6 +62,11 @@ void Game::saveScoreAfterGame()
 	fclose(highestScoreFileCompare);
 }
 
+void Game::createWindow()
+{
+	window = new Window(this);
+}
+
 int Game::saveInitAllegroAddons()
 {
 	if (!al_init()) {
@@ -112,7 +116,7 @@ void Game::init()
 	this->registerEventSources();	
 	this->startTimer();
 
-	//this->player = new Player('../assets/xwing.jpg');
+	this->player = new Player("../assets/xwing.jpg");
 }
 
 void Game::initBitmaps()
@@ -143,7 +147,7 @@ void Game::registerEventSources()
 
 void Game::displayAuthorInfo()
 {
-	// Polish chars are still displayed not properly
+	// @todo - polish chars are still displayed not properly
 	printf_s("Tw\242rca: Micha\210 Mytych\nElektroniczne Przetwarzanie Informacji,\nUniwersytet Jegiello\344ski\n24.05.2020\nVisual Studio 2019\nMicrosoft Visual C++");
 	getchar();
 }
@@ -157,7 +161,7 @@ void Game::run()
 
 void Game::runLoops()
 {
-	this->menu = new Menu;
+	this->menu = this->window ? new Menu(this->window) : NULL;
 	
 	while (this->showMenu) {
 		this->menu->runViewLoop();

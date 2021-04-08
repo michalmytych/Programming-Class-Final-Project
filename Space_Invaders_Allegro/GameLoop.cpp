@@ -20,7 +20,7 @@ void GameLoop::runPollingLoop()
 	srand(NULL);
 
 	ALLEGRO_EVENT event;
-	al_wait_for_event(this->game->queue, &event);
+	al_wait_for_event(Game::queue, &event);
 	ALLEGRO_KEYBOARD_STATE keyState;
 	al_get_keyboard_state(&keyState);
 
@@ -31,39 +31,39 @@ void GameLoop::runPollingLoop()
 	Explosion.throwed = false;
 
 
-
-
 	// *** GAME CONTROLLER ***
 
 	if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE || al_key_down(&keyState, ALLEGRO_KEY_ESCAPE))
 	{
-		running = false;
+		this->game->runningLoop = false;
 	}
 
 
 
 	if (al_key_down(&keyState, ALLEGRO_KEY_A) || al_key_down(&keyState, ALLEGRO_KEY_LEFT))
 	{
-		if (Player.prevMoveState == 2)
+		if (game->player->prevMoveState == 2)
 		{
-			Player.vel = Player.vel / Player.objSlowDown;
+			game->player->setVelocity(game->player->getVelocity() / game->player->objSlowDown);
 		}
-		Player.moveState = 1;
-		if (Player.vel < Player.maxVel)
+		game->player->moveState = 1;
+		if (game->player->getVelocity() < game->player->maxVel)
 		{
-			Player.vel = Player.vel + Player.accel;
+			game->player->setVelocity(game->player->getVelocity() + game->player->accel);
 		}
 	}
 	else if (al_key_down(&keyState, ALLEGRO_KEY_D) || al_key_down(&keyState, ALLEGRO_KEY_RIGHT))
 	{
-		if (Player.prevMoveState == 1)
+		if (game->player->prevMoveState == 1)
 		{
-			Player.vel = Player.vel / Player.objSlowDown;
+			game->player->setVelocity(game->player->getVelocity() / game->player->objSlowDown);
 		}
-		Player.moveState = 2;
-		if (Player.vel < Player.maxVel)
+
+		game->player->moveState = 2;
+
+		if (game->player->getVelocity() < game->player->maxVel)
 		{
-			Player.vel = Player.vel + Player.accel;
+			game->player->setVelocity(game->player->getVelocity() + game->player->accel);
 		}
 	}
 	else
@@ -318,7 +318,7 @@ void GameLoop::runPollingLoop()
 		if (game_ended) {
 			while (end_view) {
 				ALLEGRO_EVENT event;
-				al_wait_for_event(queue, &event);
+				al_wait_for_event(Game::queue, &event);
 				ALLEGRO_KEYBOARD_STATE keyState;
 				al_get_keyboard_state(&keyState);
 
